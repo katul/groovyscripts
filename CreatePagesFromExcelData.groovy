@@ -85,7 +85,7 @@ class GroovyExcelParser {
         def filename = '/Users/archanagupta/Desktop/announcements-data.xlsx'
         GroovyExcelParser parser = new GroovyExcelParser()
         def (headers, rows) = parser.parse(filename)
-        def rootPagePath = "/content/upstox/en/announcements/";
+        def rootPagePath = "/content/we-retail/en/announcements/";
         println 'Headers'
         println '------------------'
         headers.each { header -> 
