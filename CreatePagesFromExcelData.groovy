@@ -46,6 +46,9 @@ class GroovyExcelParser {
     def colIndex = cell.getColumnIndex()
     def value = ""
     switch (cell.getCellType()) {
+      case CellType.BLANK:
+        value = "atul";
+        break;
       case CellType.STRING:
         value = cell.getRichStringCellValue().getString();
         break;
@@ -82,7 +85,7 @@ class GroovyExcelParser {
         def filename = '/Users/archanagupta/Desktop/announcements-data.xlsx'
         GroovyExcelParser parser = new GroovyExcelParser()
         def (headers, rows) = parser.parse(filename)
-        def rootPagePath = "/content/we-retail/us/en/about-us/";
+        def rootPagePath = "/content/upstox/en/announcements/";
         println 'Headers'
         println '------------------'
         headers.each { header -> 
@@ -91,16 +94,32 @@ class GroovyExcelParser {
         println "\n"
         println 'Rows'
         println '------------------'
+        def  count = 0;
         rows.each { row ->
           String date =  row[0];
           String time =  row[1];
           String title =  row[2];
           String tags =  row[3];
           String content =  row[4];
-          
-          Page page = pageManager.create(rootPagePath,JcrUtil.createValidName(title),"we-retail/templates/content-page",title);
-          println page.path;
-          Node pageNode = page.adaptTo(Node.class);
-          Node contentNode = pageNode.getNode("jcr:content");
+          if(!tags.isEmpty()){
+              if(!tags.contains(",")){
+                  def tagVal = tags.split("#")[1];
+                  def tag = tagVal.replaceAll(" ","-").toLowerCase();
+                  def rootPage = rootPagePath + tag + "/";
+                  if(getPage(rootPage)==null){
+                      pageManager.create(rootPagePath,JcrUtil.createValidName(tag),"we-retail/templates/content-page",tagVal);
+                  }
+                 Page page = pageManager.create(rootPage,JcrUtil.createValidName(title),"we-retail/templates/content-page",title);
+                 //println page.path;
+                 Node pageNode = page.adaptTo(Node.class);
+                 Node contentNode = pageNode.getNode("jcr:content");
+                 Node contentNode = pageNode.getorAddNode("jcr:content");
+                 contentNode.setProperty("announcementTitle",title);
+                 contentNode.setProperty("announcementDate",date);
+                 contentNode.setProperty("announcementTime",time);
+                 contentNode.setProperty("announcementContent",content);
+                 contentNode.setProperty("announcementTags",tags);
+                }
+            }
         }
-  }
+    }
